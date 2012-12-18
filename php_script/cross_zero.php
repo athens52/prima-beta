@@ -102,7 +102,7 @@ class field
   {
     if($this->getFieldState() <> self::GS_CONTINUED)
     {
-      throw new EGaveOver('Game over');
+      throw new EGameOver('Game over');
     }
     if(!in_array($sign, fieldAnalyser::getSignList()))
     {
@@ -380,7 +380,7 @@ class EInvalidSign extends Exception
   
 }
 
-class EGaveOver extends Exception
+class EGameOver extends Exception
 {
 
 }
