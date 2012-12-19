@@ -4,6 +4,9 @@ class cell
   const ZERO_VALUE = 0;
   const CROSS_VALUE = 1;
   
+  private $id;
+  private $field_id;
+  private $sign;
   private $value;
   
   /**
@@ -12,7 +15,39 @@ class cell
   */
   function __construct()
   {
+    $this->id = 0;
+    $this->field_id = 0;
     $this->value = null;
+  }
+  
+  public function getId()
+  {
+    return $this->id;
+  }
+  
+  public function getFieldId()
+  {
+    return $this->field_id;
+  }
+  
+  public function getSign()
+  {
+    return $this->sign;
+  }
+  
+  public function setId($value)
+  {
+    $this->id = $value;
+  }
+  
+  public function setFieldId($value)
+  {
+    $this->field_id = $value;
+  }
+  
+  public function setSign($value)
+  {
+    $this->sign = $value;
   }
   
   /**
@@ -58,15 +93,37 @@ class cell
   }
 }
 
+class fieldState
+{
+  public static function getFieldStateName($id)
+  {
+    $state_list = array(
+      field::GS_CONTINUED => 'continued',
+      field::GS_CROSS_WON => 'X_won',
+      field::GS_ZERO_WON => '0_won',
+      field::GS_NO_WIN => 'no_win',
+    );
+    if(array_key_exists($id, $state_list))
+    {
+      return $state_list[$id];
+    }
+    else
+    {
+      return 'unknown state';
+    }
+  }
+}
+
 class field
 {
-  const GS_CONTINUED = 'continued';
-  const GS_CROSS_WON = 'X_won';
-  const GS_ZERO_WON = '0_won';
-  const GS_NO_WIN = 'no_win';
+  const GS_CONTINUED = 1; //'continued';
+  const GS_CROSS_WON = 2; //'X_won';
+  const GS_ZERO_WON = 3; //'0_won';
+  const GS_NO_WIN = 4; //'no_win';
 
   private $cell_list;
   private $field_state;
+  private $id;
   
   /**
   * Конструктор
@@ -76,20 +133,51 @@ class field
   {
     $cell_sign_list = fieldAnalyser::getSignList();
     $this->cell_list = array();
+    $this->id = 0;
     foreach($cell_sign_list as $key => $sign)
     {
-      $this->cell_list[$sign] = new cell();
+      $cell = new cell();
+      $cell->setSign($sign);
+      $this->cell_list[$sign] = $cell;
     }
     $this->field_state = self::GS_CONTINUED;
   }
 
   /**
-  * Получение состояния ячейки
+  * Получение состояния игры
   * 
   */
   public function getFieldState()
   {
     return $this->field_state;
+  }
+
+  public function setFieldState($value)
+  {
+    $this->field_state = $value;
+  }
+  
+  public function getId()
+  {
+    return $this->id;
+  }
+  
+  public function setId($value)
+  {
+    $this->id = $value;
+  }
+  
+  public function initCell($sign, $cell_id, $field_id, $value)
+  {
+    $this->cell_list[$sign]->setId($cell_id);
+    $this->cell_list[$sign]->setFieldId($field_id);
+    $this->cell_list[$sign]->setSign($sign);
+    $this->cell_list[$sign]->setValue($value);
+  }
+  
+  public function getCell($sign)
+  {
+    return $this->cell_list[$sign];
   }
   
   /**
@@ -117,11 +205,11 @@ class field
     {
       if($value == cell::CROSS_VALUE)
       {
-        $this->field_state = self::GS_CROSS_WON;
+        $this->setFieldState(self::GS_CROSS_WON);
       }
       else
       {
-        $this->field_state = self::GS_ZERO_WON;
+        $this->setFieldState(self::GS_ZERO_WON);
       }
     }
     elseif(fieldAnalyser::isFieldWinAvaliable($this, $value) == false)
@@ -261,23 +349,17 @@ class fieldAnalyser
 
 class fieldPeer
 {
-  public static function getField()
+  public static function getField($id = null)
   {
-    if(sessionWrapper::hasAttribut('game_data') and (requestWrapper::hasParameter('clear') == false))
-    {
-      $field = unserialize(sessionWrapper::getAttribute('game_data'));
-    }
-    else
-    {
-      $field = new field();
-      sessionWrapper::setAttribute('game_data', serialize($field));
-    }
+    $field = SessionStorage::getField($id);
+    //$field = MySQLStorage::getField($id);
     return $field;
   }
   
   public static function saveField($field)
   {
-    sessionWrapper::setAttribute('game_data', serialize($field));
+    SessionStorage::saveField($field);
+    //MySQLStorage::saveField($field);
   }
 }
 
@@ -365,6 +447,201 @@ class sessionWrapper
   }
 }
 
+interface IDBInfoHolder
+{
+  public function getHost();
+  public function getDatabase();
+  public function getLogin();
+  public function getPassword();
+}
+
+class DBInfoHolder implements IDBInfoHolder
+{
+  public function getHost()
+  {
+    return 'localhost';
+  }
+  public function getDatabase()
+  {
+    return 'test';
+  }
+  public function getLogin()
+  {
+    return 'root';
+  }
+  public function getPassword()
+  {
+    return '1';
+  }
+}
+
+class DBConnector
+{
+  private static $connection;
+  
+  public static function getConnection(IDBInfoHolder $db_info_holder = null)
+  {
+    if(!isset(self::$connection))
+    {
+      if(is_null($db_info_holder))
+      {
+        throw new EDBConnectionFailed('No data was found to establish connection');
+      }
+      self::$connection = mysql_connect($db_info_holder->getHost(),$db_info_holder->getLogin(),$db_info_holder->getPassword());
+      $sql_err_num = mysql_errno();
+      $sql_err_mess = mysql_error();
+      if ($sql_err_num <> 0) 
+      {
+        throw new EDBConnectionFailed($sql_err_mess);
+      }
+      mysql_select_db($db_info_holder->getDatabase());
+
+      $query = "SET NAMES cp1251";
+      self::executeQuery($query);
+    }
+    return self::$connection;
+  }
+  
+  public static function closeConnection()
+  {
+    if(isset(self::$connection))
+    {
+      mysql_close(self::$connection);
+    }
+  }
+  
+  public static function executeQuery($query)
+  {
+    $connection = self::getConnection();
+    $sql_res = mysql_query($query, $connection);
+    $sql_err_num = mysql_errno();
+    $sql_err_mess = mysql_error();
+    if ($sql_err_num <> 0) {
+      throw new EQueryFailed($sql_err_mess . '[' . $query . ']');
+    }
+  }
+  
+  public static function doSelect($query)
+  {
+    $connection = self::getConnection();
+    $sql_res = mysql_query($query, $connection);
+    $sql_err_num = mysql_errno();
+    $sql_err_mess = mysql_error();
+    if ($sql_err_num <> 0) 
+    {
+      throw new EQueryFailed($sql_err_mess . '[' . $query . ']');
+    }
+    $num_results = mysql_num_rows($sql_res);
+    $data = array();
+    for ($i = 0; $i < $num_results; $i++)
+    {
+      $data[] = mysql_fetch_array($sql_res);
+    }
+    mysql_free_result($sql_res);
+    return $data;
+  }
+}
+
+class SessionStorage
+{
+  public static function getField()
+  {
+    if(sessionWrapper::hasAttribut('game_data') and (requestWrapper::hasParameter('clear') == false))
+    {
+      $field = unserialize(sessionWrapper::getAttribute('game_data'));
+    }
+    else
+    {
+      $field = new field();
+      sessionWrapper::setAttribute('game_data', serialize($field));
+    }
+    return $field;
+  }
+  
+  public static function saveField($field)
+  {
+    sessionWrapper::setAttribute('game_data', serialize($field));
+  }
+}
+
+class MySQLStorage
+{
+  public static function getField($id = null)
+  {
+    if(is_null($id))
+    {
+      $field = new field();
+    }
+    else
+    {
+      $field_data = DBConnector::doSelect('SELECT id, state FROM cs_field WHERE id = ' . $id);
+      $field = new field();
+      foreach($field_data as $index => $row)
+      {
+        $field->setId($row['id']);
+        $field->setFieldState($row['state']);
+      }
+      $cell_data = DBConnector::doSelect('SELECT id,field_id,sign,value,update_date FROM cs_cell WHERE field_id = ' . $id);
+      foreach($cell_data as $index => $row)
+      {
+        $field->initCell($row['sign'], $row['id'], $row['field_id'], (int)$row['value']);
+      }
+    }
+    return $field;
+  }
+  
+  public static function saveField($field)
+  {
+    if($field->getId() == 0)
+    {
+      $query = 'INSERT INTO cs_field (state) VALUES (' . $field->getFieldState() . ')';
+    }
+    else
+    {
+      $query = 'UPDATE cs_field SET state = ' . $field->getFieldState() . ' WHERE id = ' . $field->getId();
+    }
+    DBConnector::executeQuery($query);
+    if($field->getId() == 0)
+    {
+      $id = self::getLastId();
+      $field->setId($id);
+    }
+    
+    foreach(fieldAnalyser::getSignList() as $sign)
+    {
+      $cell = $field->getCell($sign);
+      if(!is_null($cell->getValue()))
+      {
+        if($cell->getId() == 0)
+        {
+          $query = 'INSERT INTO cs_cell (FIELD_ID, SIGN, VALUE, UPDATE_DATE) VALUES (' . $field->getId() . ', ' . $cell->getSign() . ', ' . $cell->getValue() . ', Now())';
+        }
+        else
+        {
+          $query = 'UPDATE cs_cell SET FIELD_ID = ' . $cell->getFieldId() . ', SIGN = ' . $cell->getSign() . ', VALUE = ' . $cell->getValue() . ', UPDATE_DATE = Now() WHERE ID = ' . $cell->getId();
+        }
+        DBConnector::executeQuery($query);
+        if($cell->getId() == 0)
+        {
+          $id = self::getLastId();
+          $cell->setId($id);
+        }
+      }
+    }
+  }
+
+  private static function getLastId()
+  {
+    $data = DBConnector::doSelect('SELECT last_insert_id() as id');
+    $result = 0;
+    foreach($data as $index => $row)
+    {
+      $result = $row['id'];
+    }
+    return $result;
+  }
+}
+
 class ECellBusy extends Exception
 {
   
@@ -383,6 +660,16 @@ class EInvalidSign extends Exception
 class EGameOver extends Exception
 {
 
+}
+
+class EDBConnectionFailed extends Exception
+{
+  
+}
+
+class EQueryFailed extends Exception
+{
+  
 }
 ?>
 
