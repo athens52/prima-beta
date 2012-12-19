@@ -602,7 +602,7 @@ class MySQLStorage implements IStorage
         $field->setId($row['id']);
         $field->setFieldState($row['state']);
       }
-      $cell_data = DBConnector::doSelect('SELECT id,field_id,sign,value,update_date FROM cs_cell WHERE field_id = ' . $id);
+      $cell_data = DBConnector::doSelect('SELECT id,field_id,sign,value,update_date FROM cs_cell WHERE field_id = ' . $id . ' ORDER BY update_date');
       foreach($cell_data as $index => $row)
       {
         $field->initCell($row['sign'], $row['id'], $row['field_id'], (int)$row['value']);
@@ -665,6 +665,20 @@ class MySQLStorage implements IStorage
     foreach($data as $index => $row)
     {
       $result = $row['id'];
+    }
+    return $result;
+  }
+
+  public function getFieldList()
+  {
+    $field_data = DBConnector::doSelect('SELECT id, state FROM cs_field ORDER BY id');
+    $result = array();
+    foreach($field_data as $index => $row)
+    {
+      $field = new field();
+      $field->setId($row['id']);
+      $field->setFieldState($row['state']);
+      $result[$field->getId()] = $field;
     }
     return $result;
   }

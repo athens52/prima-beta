@@ -1,5 +1,5 @@
 <?php
-
+//Скрипт для собственно игры
   include("../../php_script/cross_zero.php");
 
   storageFabrique::getStorage()->init();
@@ -23,7 +23,6 @@
       $error_message = $e->getMessage();
     }
   }
-  //DBConnector::closeConnection();
 ?>
 <div>
 game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
