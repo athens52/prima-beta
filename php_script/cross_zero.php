@@ -351,15 +351,15 @@ class fieldPeer
 {
   public static function getField($id = null)
   {
-    $field = SessionStorage::getField($id);
-    //$field = MySQLStorage::getField($id);
+    $storage = storageFabrique::getStorage();
+    $field = $storage->getField($id);
     return $field;
   }
   
   public static function saveField($field)
   {
-    SessionStorage::saveField($field);
-    //MySQLStorage::saveField($field);
+    $storage = storageFabrique::getStorage();
+    $storage->saveField($field);
   }
 }
 
@@ -542,9 +542,25 @@ class DBConnector
   }
 }
 
-class SessionStorage
+interface IStorage
 {
-  public static function getField()
+  public function getField();
+  public function saveField($field);
+  public function init();
+}
+
+class storageFabrique
+{
+  public static function getStorage()
+  {
+    //return new SessionStorage();
+    return new MySQLStorage();
+  }
+}
+
+class SessionStorage implements IStorage
+{
+  public function getField()
   {
     if(sessionWrapper::hasAttribut('game_data') and (requestWrapper::hasParameter('clear') == false))
     {
@@ -558,15 +574,20 @@ class SessionStorage
     return $field;
   }
   
-  public static function saveField($field)
+  public function saveField($field)
   {
     sessionWrapper::setAttribute('game_data', serialize($field));
   }
+
+  public function init()
+  {
+    session_start();
+  }
 }
 
-class MySQLStorage
+class MySQLStorage implements IStorage
 {
-  public static function getField($id = null)
+  public function getField($id = null)
   {
     if(is_null($id))
     {
@@ -590,7 +611,7 @@ class MySQLStorage
     return $field;
   }
   
-  public static function saveField($field)
+  public function saveField($field)
   {
     if($field->getId() == 0)
     {
@@ -628,6 +649,13 @@ class MySQLStorage
         }
       }
     }
+  }
+
+  public function init()
+  {
+    session_start();
+    $db_info = new DBInfoHolder();
+    DBConnector::getConnection($db_info);
   }
 
   private static function getLastId()

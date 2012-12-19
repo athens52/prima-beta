@@ -1,11 +1,9 @@
 <?php
-  include "../../php_script/l_common.php";
 
   include("../../php_script/cross_zero.php");
-  
-  $db_info = new DBInfoHolder();
-  DBConnector::getConnection($db_info);
-  
+
+  storageFabrique::getStorage()->init();
+
   $field = fieldPeer::getField(requestWrapper::getParameter('id', null));
 
   $sign_list = fieldAnalyser::getSignList();
@@ -25,7 +23,7 @@
       $error_message = $e->getMessage();
     }
   }
-  DBConnector::closeConnection();
+  //DBConnector::closeConnection();
 ?>
 <div>
 game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
