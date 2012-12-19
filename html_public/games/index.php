@@ -1,9 +1,13 @@
 <?php
   include "../../php_script/l_common.php";
 
-  include "../../php_script/cross_zero.php";
+  include("../../php_script/cross_zero.php");
   
-  $field = fieldPeer::getField();
+  $db_info = new DBInfoHolder();
+  DBConnector::getConnection($db_info);
+  
+  $field = fieldPeer::getField(requestWrapper::getParameter('id', null));
+
   $sign_list = fieldAnalyser::getSignList();
   $sign_index = 0;
   $error_message = '';
@@ -21,9 +25,10 @@
       $error_message = $e->getMessage();
     }
   }
+  DBConnector::closeConnection();
 ?>
 <div>
-game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo $field->getFieldState();?></span>
+game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
 <?php if(strlen($error_message) > 0) {?>
 <span style="color:red;">
   <?php echo $error_message;?>
@@ -36,7 +41,7 @@ game status: <span style="color:<?php echo $field->getFieldState() == field::GS_
   <tr>
     <?php for ($j = 0; $j < 3; $j++) {?>
     <td width="33%">
-      <a href="index.php?sign=<?php echo $sign_list[$sign_index];?>"><div><?php echo is_null($field->getCellState($sign_list[$sign_index])) ? '&nbsp' : ($field->getCellState($sign_list[$sign_index]) == cell::CROSS_VALUE ? 'X' : '0');?></div></a>
+      <a href="index.php?id=<?php echo $field->getId();?>&sign=<?php echo $sign_list[$sign_index];?>"><div><?php echo is_null($field->getCellState($sign_list[$sign_index])) ? '&nbsp' : ($field->getCellState($sign_list[$sign_index]) == cell::CROSS_VALUE ? 'X' : '0');?></div></a>
       <?php $sign_index++;?>
     </td>
     <?php }?>
