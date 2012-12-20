@@ -449,29 +449,19 @@ class sessionWrapper
 
 interface IDBInfoHolder
 {
-  public function getHost();
-  public function getDatabase();
-  public function getLogin();
-  public function getPassword();
+  public function getConnectionOptions();
 }
 
 class DBInfoHolder implements IDBInfoHolder
 {
-  public function getHost()
+  public function getConnectionOptions()
   {
-    return 'localhost';
-  }
-  public function getDatabase()
-  {
-    return 'test';
-  }
-  public function getLogin()
-  {
-    return 'root';
-  }
-  public function getPassword()
-  {
-    return '1';
+    return array(
+      'host' => 'localhost',
+      'database' => 'test',
+      'login' => 'root',
+      'password' => '1',
+    );
   }
 }
 
@@ -487,14 +477,18 @@ class DBConnector
       {
         throw new EDBConnectionFailed('No data was found to establish connection');
       }
-      self::$connection = mysql_connect($db_info_holder->getHost(),$db_info_holder->getLogin(),$db_info_holder->getPassword());
+      $connection_options = $db_info_holder->getConnectionOptions();
+      self::$connection = mysql_connect(
+        $connection_options['host'],
+        $connection_options['login'],
+        $connection_options['password']);
       $sql_err_num = mysql_errno();
       $sql_err_mess = mysql_error();
       if ($sql_err_num <> 0) 
       {
         throw new EDBConnectionFailed($sql_err_mess);
       }
-      mysql_select_db($db_info_holder->getDatabase());
+      mysql_select_db($connection_options['database']);
 
       $query = "SET NAMES cp1251";
       self::executeQuery($query);
