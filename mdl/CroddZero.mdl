@@ -1079,6 +1079,173 @@
 				quid       	"50D01CB40101"
 				supplier   	"Logical View::Design Model::Exception"
 				quidu      	"50D01C730142")))
+		    (object Class "EDBConnectionFailed"
+			quid       	"50D27F880393"
+			superclasses 	(list inheritance_relationship_list
+			    (object Inheritance_Relationship
+				quid       	"50D27F9000F6"
+				supplier   	"Logical View::Design Model::Exception"
+				quidu      	"50D01C730142")))
+		    (object Class "EQueryFailed"
+			quid       	"50D27F97027D"
+			superclasses 	(list inheritance_relationship_list
+			    (object Inheritance_Relationship
+				quid       	"50D27F9D006D"
+				supplier   	"Logical View::Design Model::Exception"
+				quidu      	"50D01C730142")))
+		    (object Class "IStorage"
+			quid       	"50D27FB8019E"
+			documentation 	"Интерфейс, который призван формализовать функциональность сохранения данных в к-л хранилище и получение их оттуда"
+			stereotype 	"Interface"
+			operations 	(list Operations
+			    (object Operation "getField"
+				quid       	"50D2803F0084"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "saveField"
+				quid       	"50D28044025F"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "init"
+				quid       	"50D2804B00EA"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)))
+		    (object Class "MySQLStorage"
+			quid       	"50D2801700B8"
+			used_nodes 	(list uses_relationship_list
+			    (object Uses_Relationship
+				quid       	"50D2814301C5"
+				supplier   	"Logical View::Design Model::storageFabrique"
+				quidu      	"50D280B4027B"))
+			realized_interfaces 	(list realize_rel_list
+			    (object Realize_Relationship
+				quid       	"50D2809F02C0"
+				supplier   	"Logical View::Design Model::IStorage"
+				quidu      	"50D27FB8019E"))
+			operations 	(list Operations
+			    (object Operation "getField"
+				quid       	"50D280240012"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "saveField"
+				quid       	"50D2802A0219"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "init"
+				quid       	"50D28032011E"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "getLastId"
+				quid       	"50D2805B0291"
+				concurrency 	"Sequential"
+				opExportControl 	"Private"
+				uid        	0)
+			    (object Operation "getFieldList"
+				quid       	"50D2806A0051"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)))
+		    (object Class "SessionStorage"
+			quid       	"50D2807A006D"
+			used_nodes 	(list uses_relationship_list
+			    (object Uses_Relationship
+				quid       	"50D2814702BE"
+				supplier   	"Logical View::Design Model::storageFabrique"
+				quidu      	"50D280B4027B"))
+			realized_interfaces 	(list realize_rel_list
+			    (object Realize_Relationship
+				quid       	"50D280A201FC"
+				supplier   	"Logical View::Design Model::IStorage"
+				quidu      	"50D27FB8019E"))
+			operations 	(list Operations
+			    (object Operation "getField"
+				quid       	"50D280860270"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "saveField"
+				quid       	"50D2808C0146"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "init"
+				quid       	"50D280910306"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)))
+		    (object Class "storageFabrique"
+			quid       	"50D280B4027B"
+			operations 	(list Operations
+			    (object Operation "getStorage"
+				quid       	"50D280BF01D7"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)))
+		    (object Class "DBConnector"
+			quid       	"50D280D20279"
+			documentation 	"Класс для подключения к БД MySQL"
+			operations 	(list Operations
+			    (object Operation "getConnection"
+				quid       	"50D280FA018E"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "closeConnection"
+				quid       	"50D2810103E6"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "executeQuery"
+				quid       	"50D2810700D1"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "doSelect"
+				quid       	"50D2810C02E5"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0))
+			class_attributes 	(list class_attribute_list
+			    (object ClassAttribute "connection"
+				quid       	"50D2811302C4")))
+		    (object Class "IDBInfoHolder"
+			quid       	"50D281590330"
+			documentation 	"Класс для хранения настроек подключения к БД"
+			stereotype 	"Interface")
+		    (object Class "DBInfoHolder"
+			quid       	"50D2817B02EB"
+			realized_interfaces 	(list realize_rel_list
+			    (object Realize_Relationship
+				quid       	"50D281A10267"
+				supplier   	"Logical View::Design Model::IDBInfoHolder"
+				quidu      	"50D281590330"))
+			operations 	(list Operations
+			    (object Operation "getHost"
+				quid       	"50D281890014"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "getDatabase"
+				quid       	"50D2818E01D3"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "getLogin"
+				quid       	"50D281940012"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)
+			    (object Operation "getPassword"
+				quid       	"50D281990046"
+				concurrency 	"Sequential"
+				opExportControl 	"Public"
+				uid        	0)))
 		    (object Class_Category "<Layer Name> Layer"
 			quid       	"34E3686A00F0"
 			documentation 	
@@ -1553,8 +1720,8 @@
 			zoom       	100
 			max_height 	28350
 			max_width  	21600
-			origin_x   	0
-			origin_y   	0
+			origin_x   	53
+			origin_y   	469
 			items      	(list diagram_item_list
 			    (object NoteView @41
 				location   	(672, 304)
@@ -1861,7 +2028,7 @@
 				    fill_color 	13434879
 				    anchor     	2
 				    nlines     	3
-				    max_width  	253)
+				    max_width  	259)
 				width      	320
 				height     	222
 				annotation 	8
@@ -1910,7 +2077,7 @@
 				    fill_color 	13434879
 				    anchor     	2
 				    nlines     	3
-				    max_width  	325)
+				    max_width  	331)
 				width      	404
 				height     	268
 				annotation 	8
@@ -1959,7 +2126,7 @@
 				    fill_color 	13434879
 				    anchor     	2
 				    nlines     	4
-				    max_width  	266)
+				    max_width  	275)
 				width      	390
 				height     	268
 				annotation 	8
@@ -2037,7 +2204,7 @@
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(1424, 1632)
+				location   	(1104, 1792)
 				font       	(object Font
 				    size       	9
 				    face       	"Arial"
@@ -2050,7 +2217,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@53
-				    location   	(1264, 1584)
+				    location   	(944, 1744)
 				    fill_color 	13434879
 				    nlines     	1
 				    max_width  	320
@@ -2068,7 +2235,7 @@
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(1808, 1632)
+				location   	(1552, 1648)
 				font       	(object Font
 				    size       	9
 				    face       	"Arial"
@@ -2081,7 +2248,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@54
-				    location   	(1665, 1584)
+				    location   	(1409, 1600)
 				    fill_color 	13434879
 				    nlines     	1
 				    max_width  	286
@@ -2099,7 +2266,7 @@
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(2176, 1616)
+				location   	(1776, 1808)
 				font       	(object Font
 				    size       	9
 				    face       	"Arial"
@@ -2112,7 +2279,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@55
-				    location   	(2030, 1568)
+				    location   	(1630, 1760)
 				    fill_color 	13434879
 				    nlines     	1
 				    max_width  	292
@@ -2153,6 +2320,444 @@
 				quidu      	"50D01CB40101"
 				client     	@55
 				supplier   	@51
+				line_style 	0)
+			    (object ClassView "Class" "Logical View::Design Model::EDBConnectionFailed" @60
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(2400, 1632)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@60
+				    location   	(2261, 1560)
+				    fill_color 	13434879
+				    nlines     	2
+				    max_width  	278
+				    justify    	0
+				    label      	"EDBConnectionFailed")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D27F880393"
+				width      	296
+				height     	166
+				annotation 	8
+				autoResize 	TRUE)
+			    (object InheritView "" @61
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D27F9000F6"
+				client     	@60
+				supplier   	@51
+				line_style 	0)
+			    (object ClassView "Class" "Logical View::Design Model::EQueryFailed" @62
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(2032, 1648)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@62
+				    location   	(1872, 1600)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	320
+				    justify    	0
+				    label      	"EQueryFailed")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D27F97027D"
+				width      	338
+				height     	118
+				annotation 	8
+				autoResize 	TRUE)
+			    (object InheritView "" @63
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D27F9D006D"
+				client     	@62
+				supplier   	@51
+				line_style 	0)
+			    (object ClassView "Class" "Logical View::Design Model::IStorage" @64
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(3120, 1024)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@64
+				    location   	(3119, 1132)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	226
+				    justify    	0
+				    label      	"IStorage")
+				icon       	"Interface"
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D27FB8019E"
+				compartment 	(object Compartment
+				    Parent_View 	@64
+				    location   	(2997, 1171)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    anchor     	2
+				    nlines     	4
+				    max_width  	241
+				    justify    	0)
+				width      	58
+				height     	58
+				annotation 	8
+				autoResize 	TRUE)
+			    (object ClassView "Class" "Logical View::Design Model::MySQLStorage" @65
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(2768, 1504)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@65
+				    location   	(2597, 1334)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	342
+				    justify    	0
+				    label      	"MySQLStorage")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D2801700B8"
+				compartment 	(object Compartment
+				    Parent_View 	@65
+				    location   	(2597, 1392)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    fill_color 	13434879
+				    anchor     	2
+				    nlines     	6
+				    max_width  	284)
+				width      	360
+				height     	362
+				annotation 	8
+				autoResize 	TRUE)
+			    (object ClassView "Class" "Logical View::Design Model::SessionStorage" @66
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(3008, 1920)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@66
+				    location   	(2827, 1797)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	362
+				    justify    	0
+				    label      	"SessionStorage")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D2807A006D"
+				compartment 	(object Compartment
+				    Parent_View 	@66
+				    location   	(2827, 1855)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    fill_color 	13434879
+				    anchor     	2
+				    nlines     	4
+				    max_width  	250)
+				width      	380
+				height     	268
+				annotation 	8
+				autoResize 	TRUE)
+			    (object RealizeView "" @67
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D2809F02C0"
+				client     	@65
+				supplier   	@64
+				line_style 	0)
+			    (object RealizeView "" @68
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D280A201FC"
+				client     	@66
+				supplier   	@64
+				line_style 	0)
+			    (object ClassView "Class" "Logical View::Design Model::storageFabrique" @69
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(3024, 784)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@69
+				    location   	(2837, 708)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	374
+				    justify    	0
+				    label      	"storageFabrique")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D280B4027B"
+				compartment 	(object Compartment
+				    Parent_View 	@69
+				    location   	(2837, 766)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    fill_color 	13434879
+				    anchor     	2
+				    nlines     	2
+				    max_width  	263)
+				width      	392
+				height     	174
+				annotation 	8
+				autoResize 	TRUE)
+			    (object ClassView "Class" "Logical View::Design Model::DBConnector" @70
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(2400, 2048)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@70
+				    location   	(2183, 1878)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	434
+				    justify    	0
+				    label      	"DBConnector")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D280D20279"
+				compartment 	(object Compartment
+				    Parent_View 	@70
+				    location   	(2183, 1936)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    fill_color 	13434879
+				    anchor     	2
+				    nlines     	6
+				    max_width  	366)
+				width      	452
+				height     	362
+				annotation 	8
+				autoResize 	TRUE)
+			    (object UsesView "" @71
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D2814301C5"
+				client     	@65
+				supplier   	@69
+				line_style 	0)
+			    (object UsesView "" @72
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D2814702BE"
+				client     	@66
+				supplier   	@69
+				line_style 	0)
+			    (object ClassView "Class" "Logical View::Design Model::IDBInfoHolder" @73
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(1872, 2048)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@73
+				    location   	(1871, 2156)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	247
+				    justify    	0
+				    label      	"IDBInfoHolder")
+				icon       	"Interface"
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D281590330"
+				width      	58
+				height     	58
+				annotation 	8
+				autoResize 	TRUE)
+			    (object ClassView "Class" "Logical View::Design Model::DBInfoHolder" @74
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(1856, 2384)
+				font       	(object Font
+				    size       	9
+				    face       	"Arial"
+				    charSet    	204
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@74
+				    location   	(1676, 2237)
+				    fill_color 	13434879
+				    nlines     	1
+				    max_width  	360
+				    justify    	0
+				    label      	"DBInfoHolder")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"50D2817B02EB"
+				compartment 	(object Compartment
+				    Parent_View 	@74
+				    location   	(1676, 2295)
+				    font       	(object Font
+					size       	9
+					face       	"Arial"
+					charSet    	204
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    icon_style 	"Icon"
+				    fill_color 	13434879
+				    anchor     	2
+				    nlines     	5
+				    max_width  	312)
+				width      	378
+				height     	316
+				annotation 	8
+				autoResize 	TRUE)
+			    (object RealizeView "" @75
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"50D281A10267"
+				client     	@74
+				supplier   	@73
 				line_style 	0)))
 		    (object ClassDiagram "Architecture Overview - Package and Subsystem Layering"
 			quid       	"354A9751015E"
@@ -2173,7 +2778,7 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object NoteView @60
+			    (object NoteView @76
 				location   	(576, 256)
 				font       	(object Font
 				    size       	9
@@ -2186,7 +2791,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@60
+				    Parent_View 	@76
 				    location   	(44, 31)
 				    fill_color 	13434879
 				    nlines     	9
@@ -2205,7 +2810,7 @@
 				fill_color 	13434879
 				width      	1088
 				height     	463)
-			    (object NoteView @61
+			    (object NoteView @77
 				location   	(1520, 176)
 				font       	(object Font
 				    size       	9
@@ -2218,7 +2823,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@61
+				    Parent_View 	@77
 				    location   	(1182, 45)
 				    fill_color 	13434879
 				    nlines     	5
@@ -2255,7 +2860,7 @@
 		origin_x   	0
 		origin_y   	0
 		items      	(list diagram_item_list
-		    (object NoteView @62
+		    (object NoteView @78
 			location   	(768, 384)
 			font       	(object Font
 			    size       	9
@@ -2268,7 +2873,7 @@
 			    color      	0
 			    default_color 	TRUE)
 			label      	(object ItemLabel
-			    Parent_View 	@62
+			    Parent_View 	@78
 			    location   	(121, 96)
 			    fill_color 	13434879
 			    nlines     	14
@@ -2327,7 +2932,7 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object NoteView @63
+			    (object NoteView @79
 				location   	(624, 160)
 				font       	(object Font
 				    size       	9
@@ -2340,7 +2945,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@63
+				    Parent_View 	@79
 				    location   	(21, 26)
 				    fill_color 	13434879
 				    nlines     	5
@@ -2366,7 +2971,7 @@
 		origin_x   	0
 		origin_y   	0
 		items      	(list diagram_item_list
-		    (object SubSysView "Component View::Implementation Model" @64
+		    (object SubSysView "Component View::Implementation Model" @80
 			location   	(736, 800)
 			font       	(object Font
 			    size       	9
@@ -2379,7 +2984,7 @@
 			    color      	0
 			    default_color 	TRUE)
 			label      	(object ItemLabel
-			    Parent_View 	@64
+			    Parent_View 	@80
 			    location   	(552, 713)
 			    fill_color 	13434879
 			    nlines     	2
@@ -2440,7 +3045,7 @@
 		origin_x   	0
 		origin_y   	0
 		items      	(list diagram_item_list
-		    (object ProcessorView "<processor name>" @65
+		    (object ProcessorView "<processor name>" @81
 			location   	(512, 1056)
 			font       	(object Font
 			    size       	9
@@ -2453,7 +3058,7 @@
 			    color      	0
 			    default_color 	TRUE)
 			label      	(object ItemLabel
-			    Parent_View 	@65
+			    Parent_View 	@81
 			    location   	(276, 900)
 			    nlines     	2
 			    max_width  	400
@@ -2464,7 +3069,7 @@
 			width      	475
 			height     	381
 			annotation 	3)
-		    (object DeviceView "<device name>" @66
+		    (object DeviceView "<device name>" @82
 			location   	(1040, 1056)
 			font       	(object Font
 			    size       	9
@@ -2477,7 +3082,7 @@
 			    color      	0
 			    default_color 	TRUE)
 			label      	(object ItemLabel
-			    Parent_View 	@66
+			    Parent_View 	@82
 			    location   	(867, 950)
 			    nlines     	2
 			    max_width  	275
@@ -2488,13 +3093,13 @@
 			width      	350
 			height     	282
 			annotation 	0)
-		    (object ConnectionView "" @67
+		    (object ConnectionView "" @83
 			stereotype 	TRUE
 			quidu      	"34DBBD4B008C"
-			client     	@65
-			supplier   	@66
+			client     	@81
+			supplier   	@82
 			line_style 	0)
-		    (object NoteView @68
+		    (object NoteView @84
 			location   	(816, 304)
 			font       	(object Font
 			    size       	9
@@ -2507,7 +3112,7 @@
 			    color      	0
 			    default_color 	TRUE)
 			label      	(object ItemLabel
-			    Parent_View 	@68
+			    Parent_View 	@84
 			    location   	(38, 29)
 			    fill_color 	13434879
 			    nlines     	11
