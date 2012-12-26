@@ -1,8 +1,6 @@
 <?php
 class cell
 {
-  const ZERO_VALUE = 0;
-  const CROSS_VALUE = 1;
   
   private $id;
   private $field_id;
@@ -66,31 +64,13 @@ class cell
   */
   public function setValue($value)
   {
-    if(!(($value == self::CROSS_VALUE) or ($value == self::ZERO_VALUE)))
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
     {
       throw new EInvalidValue($value . ' - is invalid value for cell');
     }
     $this->value = $value;
   }
   
-  /**
-  * Получение противоположного значения, относительно параметра
-  * 
-  * @param mixed $value - значение (X или 0)
-  */
-  public static function getOppositValue($value)
-  {
-    if(!(($value == self::CROSS_VALUE) or ($value == self::ZERO_VALUE)))
-    {
-      throw new EInvalidValue($value . ' - is invalid value for cell');
-    }
-    $result = self::CROSS_VALUE;
-    if($value == self::CROSS_VALUE)
-    {
-      $result = self::ZERO_VALUE;
-    }
-    return $result;
-  }
 }
 
 class fieldState
@@ -151,11 +131,6 @@ class field
   {
     return $this->field_state;
   }
-
-  public function setFieldState($value)
-  {
-    $this->field_state = $value;
-  }
   
   public function getId()
   {
@@ -203,7 +178,7 @@ class field
     $this->cell_list[$sign]->setValue($value);
     if(fieldAnalyser::isFieldWon($this, $value))
     {
-      if($value == cell::CROSS_VALUE)
+      if($value == fieldAnalyser::CROSS_VALUE)
       {
         $this->setFieldState(self::GS_CROSS_WON);
       }
@@ -214,7 +189,7 @@ class field
     }
     elseif(fieldAnalyser::isFieldWinAvaliable($this, $value) == false)
     {
-      $this->field_state = self::GS_NO_WIN;
+      $this->setFieldState(self::GS_NO_WIN);
     }
   }
   
@@ -225,7 +200,7 @@ class field
   */
   public function getCellSign4Value($value)
   {
-    if(!(($value == cell::CROSS_VALUE) or ($value == cell::ZERO_VALUE)))
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
     {
       throw new EInvalidValue($value . ' - is invalid to check win');
     }
@@ -254,10 +229,18 @@ class field
     return $this->cell_list[$sign]->getValue();
   }
   
+  public function setFieldState($value)
+  {
+    $this->field_state = $value;
+  }
+  
 }
 
 class fieldAnalyser
 {
+  const ZERO_VALUE = 0;
+  const CROSS_VALUE = 1;
+  
   /**
   * Получение списка координат ячеек поля
   * 
@@ -285,7 +268,7 @@ class fieldAnalyser
   public static function isFieldWon($field, $value)
   {
     $result = false;
-    if(!(($value == cell::CROSS_VALUE) or ($value == cell::ZERO_VALUE)))
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
     {
       throw new EInvalidValue($value . ' - is invalid to check win');
     }
@@ -320,11 +303,11 @@ class fieldAnalyser
   public static function isFieldWinAvaliable($field, $value)
   {
     $result = false;
-    if(!(($value == cell::CROSS_VALUE) or ($value == cell::ZERO_VALUE)))
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
     {
       throw new EInvalidValue($value . ' - is invalid to check winner');
     }
-    $state = $field->getCellSign4Value(cell::getOppositValue($value));
+    $state = $field->getCellSign4Value(fieldAnalyser::getOppositValue($value));
     foreach(self::getWinPosition() as $win_sign_list)
     {
       $index_available = 0;
@@ -345,6 +328,24 @@ class fieldAnalyser
     return $result;
   }
 
+  /**
+  * Получение противоположного значения, относительно параметра
+  * 
+  * @param mixed $value - значение (X или 0)
+  */
+  public static function getOppositValue($value)
+  {
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    {
+      throw new EInvalidValue($value . ' - is invalid value for cell');
+    }
+    $result = fieldAnalyser::CROSS_VALUE;
+    if($value == fieldAnalyser::CROSS_VALUE)
+    {
+      $result = fieldAnalyser::ZERO_VALUE;
+    }
+    return $result;
+  }
 }
 
 class fieldPeer
@@ -355,7 +356,7 @@ class fieldPeer
     $field = $storage->getField($id);
     return $field;
   }
-  
+
   public static function saveField($field)
   {
     $storage = storageFabrique::getStorage();
@@ -369,11 +370,11 @@ class valuePeer
   {
     if(sessionWrapper::hasAttribut('game_value'))
     {
-      $curr_value = cell::getOppositValue(unserialize(sessionWrapper::getAttribute('game_value')));
+      $curr_value = fieldAnalyser::getOppositValue(unserialize(sessionWrapper::getAttribute('game_value')));
     }
     else
     {
-      $curr_value = cell::CROSS_VALUE;
+      $curr_value = fieldAnalyser::CROSS_VALUE;
     }
     return $curr_value;
   }
@@ -567,7 +568,7 @@ class SessionStorage implements IStorage
     }
     return $field;
   }
-  
+
   public function saveField($field)
   {
     sessionWrapper::setAttribute('game_data', serialize($field));
@@ -604,7 +605,7 @@ class MySQLStorage implements IStorage
     }
     return $field;
   }
-  
+
   public function saveField($field)
   {
     if($field->getId() == 0)
@@ -621,7 +622,7 @@ class MySQLStorage implements IStorage
       $id = self::getLastId();
       $field->setId($id);
     }
-    
+
     foreach(fieldAnalyser::getSignList() as $sign)
     {
       $cell = $field->getCell($sign);
@@ -680,17 +681,17 @@ class MySQLStorage implements IStorage
 
 class ECellBusy extends Exception
 {
-  
+
 }
 
 class EInvalidValue extends Exception
 {
-  
+
 }
 
 class EInvalidSign extends Exception
 {
-  
+
 }
 
 class EGameOver extends Exception
@@ -705,7 +706,7 @@ class EDBConnectionFailed extends Exception
 
 class EQueryFailed extends Exception
 {
-  
+
 }
 ?>
 
