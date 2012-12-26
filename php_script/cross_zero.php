@@ -64,10 +64,11 @@ class cell
   */
   public function setValue($value)
   {
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    if(!is_null($this->value))
     {
-      throw new EInvalidValue($value . ' - is invalid value for cell');
+      throw new ECellBusy('Cell ' . $this->sign . ' is busy');
     }
+    fieldAnalyser::isValueValid($value);
     $this->value = $value;
   }
   
@@ -78,10 +79,10 @@ class fieldState
   public static function getFieldStateName($id)
   {
     $state_list = array(
-      field::GS_CONTINUED => 'continued',
-      field::GS_CROSS_WON => 'X_won',
-      field::GS_ZERO_WON => '0_won',
-      field::GS_NO_WIN => 'no_win',
+      fieldAnalyser::GS_CONTINUED => 'continued',
+      fieldAnalyser::GS_CROSS_WON => 'X_won',
+      fieldAnalyser::GS_ZERO_WON => '0_won',
+      fieldAnalyser::GS_NO_WIN => 'no_win',
     );
     if(array_key_exists($id, $state_list))
     {
@@ -96,10 +97,6 @@ class fieldState
 
 class field
 {
-  const GS_CONTINUED = 1; //'continued';
-  const GS_CROSS_WON = 2; //'X_won';
-  const GS_ZERO_WON = 3; //'0_won';
-  const GS_NO_WIN = 4; //'no_win';
 
   private $cell_list;
   private $field_state;
@@ -120,7 +117,7 @@ class field
       $cell->setSign($sign);
       $this->cell_list[$sign] = $cell;
     }
-    $this->field_state = self::GS_CONTINUED;
+    $this->field_state = fieldAnalyser::getInitFieldState();
   }
 
   /**
@@ -163,34 +160,13 @@ class field
   */
   public function setCellState($sign, $value)
   {
-    if($this->getFieldState() <> self::GS_CONTINUED)
+    if(fieldAnalyser::isGameOver($this))
     {
       throw new EGameOver('Game over');
     }
-    if(!in_array($sign, fieldAnalyser::getSignList()))
-    {
-      throw new EInvalidSign($sign . ' is invalid sign');
-    }
-    if(!is_null($this->cell_list[$sign]->getValue()))
-    {
-      throw new ECellBusy('Cell ' . $sign . ' is busy');
-    }
+    fieldAnalyser::isSignValid($sign);
     $this->cell_list[$sign]->setValue($value);
-    if(fieldAnalyser::isFieldWon($this, $value))
-    {
-      if($value == fieldAnalyser::CROSS_VALUE)
-      {
-        $this->setFieldState(self::GS_CROSS_WON);
-      }
-      else
-      {
-        $this->setFieldState(self::GS_ZERO_WON);
-      }
-    }
-    elseif(fieldAnalyser::isFieldWinAvaliable($this, $value) == false)
-    {
-      $this->setFieldState(self::GS_NO_WIN);
-    }
+    $this->setFieldState(fieldAnalyser::calculateFieldState($this, $value));
   }
   
   /**
@@ -200,10 +176,7 @@ class field
   */
   public function getCellSign4Value($value)
   {
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
-    {
-      throw new EInvalidValue($value . ' - is invalid to check win');
-    }
+    fieldAnalyser::isValueValid($value);
     $result = array();
     foreach($this->cell_list as $sign => $cell)
     {
@@ -218,17 +191,19 @@ class field
   /**
   * Получение состояния ячейки поля
   * 
-  * @param mixed $sign - координты ячейки
+  * @param mixed $sign - координаты ячейки
   */
   public function getCellState($sign)
   {
-    if(!in_array($sign, fieldAnalyser::getSignList()))
-    {
-      throw new EInvalidSign($sign . ' is invalid sign');
-    }
+    fieldAnalyser::isSignValid($sign);
     return $this->cell_list[$sign]->getValue();
   }
-  
+
+  /**
+   * Установка состояния поля (игра продолжается, выиграл Х, выиграл 0, ничья)
+   * Используется исключительно при инициализации состояния объекта из БД
+   * @param $value
+   */
   public function setFieldState($value)
   {
     $this->field_state = $value;
@@ -240,6 +215,97 @@ class fieldAnalyser
 {
   const ZERO_VALUE = 0;
   const CROSS_VALUE = 1;
+
+  const GS_CONTINUED = 1; //'continued';
+  const GS_CROSS_WON = 2; //'X_won';
+  const GS_ZERO_WON = 3; //'0_won';
+  const GS_NO_WIN = 4; //'no_win';
+
+  /**
+   * Расчет состояния поля
+   * @static
+   * @param $field
+   * @param $value
+   * @return int
+   */
+  public static function calculateFieldState($field, $value)
+  {
+    if(fieldAnalyser::isFieldWon($field, $value))
+    {
+      return fieldAnalyser::getWinState($value);
+    }
+    elseif(fieldAnalyser::isFieldWinAvaliable($field, $value) == false)
+    {
+      return fieldAnalyser::GS_NO_WIN;
+    }
+    return fieldAnalyser::GS_CONTINUED;
+  }
+  /**
+   * Статус присваиваемый полю при инициализации
+   * @static
+   * @return int
+   */
+  public static function getInitFieldState()
+  {
+    return fieldAnalyser::GS_CONTINUED;
+  }
+  /**
+   * Проверка игры на завершенность
+   * @static
+   * @param $field
+   * @return bool
+   */
+  public static function isGameOver($field)
+  {
+    $result = false;
+    if($field->getFieldState() <> fieldAnalyser::GS_CONTINUED)
+    {
+      $result = true;
+    }
+    return $result;
+  }
+  /**
+   * Получение выигрышного статуса для к-л из игроков
+   * @static
+   * @param $value
+   * @return int
+   */
+  private static function getWinState($value)
+  {
+    fieldAnalyser::isValueValid($value);
+    if($value == fieldAnalyser::CROSS_VALUE)
+    {
+      return fieldAnalyser::GS_CROSS_WON;
+    }
+    else
+    {
+      return fieldAnalyser::GS_ZERO_WON;
+    }
+  }
+  /**
+   * Проверка координаты поля на допустимость
+   * @static
+   * @param $sign
+   * @throws EInvalidSign
+   */
+  public static function isSignValid($sign)
+  {
+    if(!in_array($sign, self::getSignList()))
+    {
+      throw new EInvalidSign($sign . ' is invalid sign');
+    }
+  }
+  /**
+   * Проверка значения, предполагаемого к записи в ячейку на допустимость
+   * @param $value
+   */
+  public static function isValueValid($value)
+  {
+    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    {
+      throw new EInvalidValue($value . ' - is invalid value');
+    }
+  }
   
   /**
   * Получение списка координат ячеек поля
@@ -265,7 +331,7 @@ class fieldAnalyser
   * @param mixed $field - поле для игры (field)
   * @param mixed $value - значение, указывающее на игрока (X или 0)
   */
-  public static function isFieldWon($field, $value)
+  private static function isFieldWon($field, $value)
   {
     $result = false;
     if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
@@ -300,7 +366,7 @@ class fieldAnalyser
   * @param mixed $field - поле для игры (field)
   * @param mixed $value - значение, указывающее на игрока (X или 0)
   */
-  public static function isFieldWinAvaliable($field, $value)
+  private static function isFieldWinAvaliable($field, $value)
   {
     $result = false;
     if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
@@ -701,7 +767,7 @@ class EGameOver extends Exception
 
 class EDBConnectionFailed extends Exception
 {
-  
+
 }
 
 class EQueryFailed extends Exception
