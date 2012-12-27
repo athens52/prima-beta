@@ -68,21 +68,48 @@ class cell
     {
       throw new ECellBusy('Cell ' . $this->sign . ' is busy');
     }
-    fieldAnalyser::isValueValid($value);
+    fieldAnalyser::checkValueValid($value);
     $this->value = $value;
   }
   
 }
 
+/**
+* Класс переводящий код статуса ячейки в символ, отображающий это состояние
+* (по идее это часть слоя view)
+*/
+class cellState
+{
+  public static function getCellStateName($id)
+  {
+    $state_list = array(
+      fieldAnalyserCrossZero::ZERO_VALUE => '0',
+      fieldAnalyserCrossZero::CROSS_VALUE => 'X',
+    );
+    if(array_key_exists($id, $state_list))
+    {
+      return $state_list[$id];
+    }
+    else
+    {
+      return '&nbsp;';
+    }
+  }
+}
+
+/**
+* Класс переводящий код статуса поля в символ, отображающий это состояние
+* (по идее это часть слоя view)
+*/
 class fieldState
 {
   public static function getFieldStateName($id)
   {
     $state_list = array(
-      fieldAnalyser::GS_CONTINUED => 'continued',
-      fieldAnalyser::GS_CROSS_WON => 'X_won',
-      fieldAnalyser::GS_ZERO_WON => '0_won',
-      fieldAnalyser::GS_NO_WIN => 'no_win',
+      fieldAnalyserCrossZero::GS_CONTINUED => 'continued',
+      fieldAnalyserCrossZero::GS_CROSS_WON => 'X_won',
+      fieldAnalyserCrossZero::GS_ZERO_WON => '0_won',
+      fieldAnalyserCrossZero::GS_NO_WIN => 'no_win',
     );
     if(array_key_exists($id, $state_list))
     {
@@ -164,7 +191,7 @@ class field
     {
       throw new EGameOver('Game over');
     }
-    fieldAnalyser::isSignValid($sign);
+    fieldAnalyser::checkSignValid($sign);
     $this->cell_list[$sign]->setValue($value);
     $this->setFieldState(fieldAnalyser::calculateFieldState($this, $value));
   }
@@ -176,7 +203,7 @@ class field
   */
   public function getCellSign4Value($value)
   {
-    fieldAnalyser::isValueValid($value);
+    fieldAnalyser::checkValueValid($value);
     $result = array();
     foreach($this->cell_list as $sign => $cell)
     {
@@ -195,7 +222,7 @@ class field
   */
   public function getCellState($sign)
   {
-    fieldAnalyser::isSignValid($sign);
+    fieldAnalyser::checkSignValid($sign);
     return $this->cell_list[$sign]->getValue();
   }
 
@@ -211,7 +238,20 @@ class field
   
 }
 
-class fieldAnalyser
+interface IFieldAnalyser
+{
+  public static function calculateFieldState($field, $value);
+  public static function getInitFieldState();
+  public static function isGameOver($field);
+  public static function checkSignValid($sign);
+  public static function checkValueValid($value);
+  public static function getSignList();
+}
+
+/**
+* Класс, реализующий алгоритм игры крестики-нолики
+*/
+class fieldAnalyserCrossZero implements IFieldAnalyser
 {
   const ZERO_VALUE = 0;
   const CROSS_VALUE = 1;
@@ -220,7 +260,7 @@ class fieldAnalyser
   const GS_CROSS_WON = 2; //'X_won';
   const GS_ZERO_WON = 3; //'0_won';
   const GS_NO_WIN = 4; //'no_win';
-
+  
   /**
    * Расчет состояния поля
    * @static
@@ -230,92 +270,68 @@ class fieldAnalyser
    */
   public static function calculateFieldState($field, $value)
   {
-    if(fieldAnalyser::isFieldWon($field, $value))
+    if(fieldAnalyserCrossZero::isFieldWon($field, $value))
     {
-      return fieldAnalyser::getWinState($value);
+      return fieldAnalyserCrossZero::getWinState($value);
     }
-    elseif(fieldAnalyser::isFieldWinAvaliable($field, $value) == false)
+    elseif(fieldAnalyserCrossZero::isFieldWinAvaliable($field, $value) == false)
     {
-      return fieldAnalyser::GS_NO_WIN;
+      return fieldAnalyserCrossZero::GS_NO_WIN;
     }
-    return fieldAnalyser::GS_CONTINUED;
+    return fieldAnalyserCrossZero::GS_CONTINUED;
   }
-  /**
-   * Статус присваиваемый полю при инициализации
-   * @static
-   * @return int
-   */
+  
   public static function getInitFieldState()
   {
-    return fieldAnalyser::GS_CONTINUED;
+    return fieldAnalyserCrossZero::GS_CONTINUED;
   }
-  /**
-   * Проверка игры на завершенность
-   * @static
-   * @param $field
-   * @return bool
-   */
+  
   public static function isGameOver($field)
   {
     $result = false;
-    if($field->getFieldState() <> fieldAnalyser::GS_CONTINUED)
+    if($field->getFieldState() <> fieldAnalyserCrossZero::GS_CONTINUED)
     {
       $result = true;
     }
     return $result;
   }
-  /**
-   * Получение выигрышного статуса для к-л из игроков
-   * @static
-   * @param $value
-   * @return int
-   */
-  private static function getWinState($value)
+  
+  public static function checkSignValid($sign)
   {
-    fieldAnalyser::isValueValid($value);
-    if($value == fieldAnalyser::CROSS_VALUE)
-    {
-      return fieldAnalyser::GS_CROSS_WON;
-    }
-    else
-    {
-      return fieldAnalyser::GS_ZERO_WON;
-    }
-  }
-  /**
-   * Проверка координаты поля на допустимость
-   * @static
-   * @param $sign
-   * @throws EInvalidSign
-   */
-  public static function isSignValid($sign)
-  {
-    if(!in_array($sign, self::getSignList()))
+    if(!in_array($sign, fieldAnalyserCrossZero::getSignList()))
     {
       throw new EInvalidSign($sign . ' is invalid sign');
     }
   }
-  /**
-   * Проверка значения, предполагаемого к записи в ячейку на допустимость
-   * @param $value
-   */
-  public static function isValueValid($value)
+
+  public static function checkValueValid($value)
   {
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    if(!(($value == fieldAnalyserCrossZero::CROSS_VALUE) or ($value == fieldAnalyserCrossZero::ZERO_VALUE)))
     {
-      throw new EInvalidValue($value . ' - is invalid value');
+      throw new EInvalidValue($value . ' - is invalid value for cell');
     }
   }
   
-  /**
-  * Получение списка координат ячеек поля
-  * 
-  */
   public static function getSignList()
   {
     return array(1,2,3,8,9,4,7,6,5);
   }
   
+  /**
+  * Получение противоположного значения, относительно параметра
+  * 
+  * @param mixed $value - значение (X или 0)
+  */
+  public static function getOppositValue($value)
+  {
+    fieldAnalyserCrossZero::checkValueValid($value);
+    $result = fieldAnalyserCrossZero::CROSS_VALUE;
+    if($value == fieldAnalyserCrossZero::CROSS_VALUE)
+    {
+      $result = fieldAnalyserCrossZero::ZERO_VALUE;
+    }
+    return $result;
+  }
   /**
   * Получение списка выигрышных состояний (координат ячеек, занятие которых обеспечивает игроку победу)
   * 
@@ -334,13 +350,10 @@ class fieldAnalyser
   private static function isFieldWon($field, $value)
   {
     $result = false;
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
-    {
-      throw new EInvalidValue($value . ' - is invalid to check win');
-    }
+    fieldAnalyserCrossZero::checkValueValid($value);
     $state = $field->getCellSign4Value($value);
     if(count($state) < 3) return $result;
-    foreach(self::getWinPosition() as $win_sign_list)
+    foreach(fieldAnalyserCrossZero::getWinPosition() as $win_sign_list)
     {
       $index_win = 0;
       foreach($win_sign_list as $win_sign)
@@ -369,17 +382,31 @@ class fieldAnalyser
   private static function isFieldWinAvaliable($field, $value)
   {
     $result = false;
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    fieldAnalyserCrossZero::checkValueValid($value);
+    $state_zero = $field->getCellSign4Value(fieldAnalyserCrossZero::ZERO_VALUE);
+    $state_cross = $field->getCellSign4Value(fieldAnalyserCrossZero::CROSS_VALUE);
+    foreach(fieldAnalyserCrossZero::getWinPosition() as $win_sign_list)
     {
-      throw new EInvalidValue($value . ' - is invalid to check winner');
-    }
-    $state = $field->getCellSign4Value(fieldAnalyser::getOppositValue($value));
-    foreach(self::getWinPosition() as $win_sign_list)
-    {
+      //проверка для fieldAnalyserCrossZero::ZERO_VALUE
       $index_available = 0;
       foreach($win_sign_list as $win_sign)
       {
-        if(in_array($win_sign, $state))
+        if(in_array($win_sign, $state_zero))
+        {
+          break;
+        }
+        $index_available++;
+      }
+      if($index_available == count($win_sign_list))
+      {
+        $result = true;
+        break;
+      }
+      //проверка для fieldAnalyserCrossZero::CROSS_VALUE
+      $index_available = 0;
+      foreach($win_sign_list as $win_sign)
+      {
+        if(in_array($win_sign, $state_cross))
         {
           break;
         }
@@ -395,37 +422,140 @@ class fieldAnalyser
   }
 
   /**
-  * Получение противоположного значения, относительно параметра
-  * 
-  * @param mixed $value - значение (X или 0)
-  */
-  public static function getOppositValue($value)
+   * Получение выигрышного статуса для к-л из игроков
+   * @static
+   * @param $value
+   * @return int
+   */
+  private static function getWinState($value)
   {
-    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+    fieldAnalyser::checkValueValid($value);
+    if($value == fieldAnalyserCrossZero::CROSS_VALUE)
     {
-      throw new EInvalidValue($value . ' - is invalid value for cell');
+      return fieldAnalyserCrossZero::GS_CROSS_WON;
     }
-    $result = fieldAnalyser::CROSS_VALUE;
-    if($value == fieldAnalyser::CROSS_VALUE)
+    else
     {
-      $result = fieldAnalyser::ZERO_VALUE;
+      return fieldAnalyserCrossZero::GS_ZERO_WON;
     }
-    return $result;
   }
+}
+
+/**
+* Класс-обертка, параметризуемый конкретным исполнителем алгоритма игры
+*/
+class fieldAnalyser implements IFieldAnalyser
+{
+  private static $cur_realisation;
+  
+  public static function init($realisation_class)
+  {
+    self::$cur_realisation = $realisation_class;
+  }
+
+  /**
+   * Расчет состояния поля
+   * @static
+   * @param $field
+   * @param $value
+   * @return int
+   */
+  public static function calculateFieldState($field, $value)
+  {
+//    if(fieldAnalyser::isFieldWon($field, $value))
+//    {
+//      return fieldAnalyser::getWinState($value);
+//    }
+//    elseif(fieldAnalyser::isFieldWinAvaliable($field, $value) == false)
+//    {
+//      return fieldAnalyser::GS_NO_WIN;
+//    }
+//    return fieldAnalyser::GS_CONTINUED;
+    $class_name = self::$cur_realisation;
+    return $class_name::calculateFieldState($field, $value);
+  }
+  /**
+   * Статус присваиваемый полю при инициализации
+   * @static
+   * @return int
+   */
+  public static function getInitFieldState()
+  {
+    //return fieldAnalyser::GS_CONTINUED;
+    $class_name = self::$cur_realisation;
+    return $class_name::getInitFieldState();
+  }
+  /**
+   * Проверка игры на завершенность
+   * @static
+   * @param $field
+   * @return bool
+   */
+  public static function isGameOver($field)
+  {
+//    $result = false;
+//    if($field->getFieldState() <> fieldAnalyser::GS_CONTINUED)
+//    {
+//      $result = true;
+//    }
+//    return $result;
+    $class_name = self::$cur_realisation;
+    return $class_name::isGameOver($field);
+  }
+  /**
+   * Проверка координаты поля на допустимость
+   * @static
+   * @param $sign
+   * @throws EInvalidSign
+   */
+  public static function checkSignValid($sign)
+  {
+//    if(!in_array($sign, self::getSignList()))
+//    {
+//      throw new EInvalidSign($sign . ' is invalid sign');
+//    }
+    $class_name = self::$cur_realisation;
+    return $class_name::checkSignValid($sign);
+  }
+  /**
+   * Проверка значения, предполагаемого к записи в ячейку на допустимость
+   * @param $value
+   */
+  public static function checkValueValid($value)
+  {
+//    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
+//    {
+//      throw new EInvalidValue($value . ' - is invalid value');
+//    }
+    $class_name = self::$cur_realisation;
+    return $class_name::checkValueValid($value);
+  }
+  
+  /**
+  * Получение списка координат ячеек поля
+  * 
+  */
+  public static function getSignList()
+  {
+//    return array(1,2,3,8,9,4,7,6,5);
+    $class_name = self::$cur_realisation;
+    return $class_name::getSignList();
+  }
+
 }
 
 class fieldPeer
 {
   public static function getField($id = null)
   {
-    $storage = storageFabrique::getStorage();
+    $storage = fieldStorageFabrique::getStorage();
     $field = $storage->getField($id);
     return $field;
   }
 
   public static function saveField($field)
   {
-    $storage = storageFabrique::getStorage();
+    $storage = fieldStorageFabrique::getStorage();
     $storage->saveField($field);
   }
 }
@@ -434,23 +564,21 @@ class valuePeer
 {
   public static function getValue()
   {
-    if(sessionWrapper::hasAttribut('game_value'))
-    {
-      $curr_value = fieldAnalyser::getOppositValue(unserialize(sessionWrapper::getAttribute('game_value')));
-    }
-    else
-    {
-      $curr_value = fieldAnalyser::CROSS_VALUE;
-    }
-    return $curr_value;
+    $storage = valueStorageFabrique::getStorage();
+    $value = $storage->getValue();
+    return $value;
   }
   
   public static function saveValue($value)
   {
-    sessionWrapper::setAttribute('game_value', serialize($value));    
+    $storage = valueStorageFabrique::getStorage();
+    $storage->saveValue($value);
   }  
 }
 
+/**
+* Класс-обертка вокруг данных запроса
+*/
 class requestWrapper
 {
   public static function getParameter($param_name, $default = null)
@@ -479,8 +607,12 @@ class requestWrapper
   }
 }
 
+/**
+* Класс-обертка вокруг данных сессии
+*/
 class sessionWrapper
 {
+  private static $session_started;
   public static function getAttribute($attr_name, $default = null)
   {
     global $_SESSION;
@@ -512,6 +644,14 @@ class sessionWrapper
       return false;
     }
   }
+  public static function init()
+  {
+    if(!isset(self::$session_started))
+    {
+      session_start();
+      self::$session_started = true;
+    }
+  }
 }
 
 interface IDBInfoHolder
@@ -519,6 +659,9 @@ interface IDBInfoHolder
   public function getConnectionOptions();
 }
 
+/**
+* Класс предоставляющий данные соединения с БД MySQL
+*/
 class DBInfoHolder implements IDBInfoHolder
 {
   public function getConnectionOptions()
@@ -532,6 +675,9 @@ class DBInfoHolder implements IDBInfoHolder
   }
 }
 
+/**
+* Класс, ответственный за подключение к БД MySQL и работу с ней
+*/
 class DBConnector
 {
   private static $connection;
@@ -603,23 +749,63 @@ class DBConnector
   }
 }
 
-interface IStorage
+interface IValueStorage
+{
+  public function getValue();
+  public function saveValue($field);
+  public function init();
+}
+
+class valueStorageFabrique
+{
+  public static function getStorage()
+  {
+    return new valueSessionStorage();
+    //return new valueMySQLStorage();
+  }
+}
+
+class valueSessionStorage implements IValueStorage
+{
+  public function getValue()
+  {
+    if(sessionWrapper::hasAttribut('game_value'))
+    {
+      $curr_value = fieldAnalyserCrossZero::getOppositValue(unserialize(sessionWrapper::getAttribute('game_value')));
+    }
+    else
+    {
+      $curr_value = fieldAnalyserCrossZero::CROSS_VALUE;
+    }
+    return $curr_value;
+  }
+  public function saveValue($value)
+  {
+    sessionWrapper::setAttribute('game_value', serialize($value));    
+  }
+  public function init()
+  {
+    sessionWrapper::init();
+  }
+}
+
+interface IFieldStorage
 {
   public function getField();
   public function saveField($field);
   public function init();
 }
 
-class storageFabrique
+class fieldStorageFabrique
 {
   public static function getStorage()
   {
-    //return new SessionStorage();
-    return new MySQLStorage();
+    //return new fieldSessionStorage();
+    return new fieldMySQLStorage();
   }
 }
 
-class SessionStorage implements IStorage
+class fieldSessionStorage implements IFieldStorage
 {
   public function getField()
   {
@@ -642,11 +828,11 @@ class SessionStorage implements IStorage
 
   public function init()
   {
-    session_start();
+    sessionWrapper::init();
   }
 }
 
-class MySQLStorage implements IStorage
+class fieldMySQLStorage implements IFieldStorage
 {
   public function getField($id = null)
   {
@@ -714,7 +900,6 @@ class MySQLStorage implements IStorage
 
   public function init()
   {
-    session_start();
     $db_info = new DBInfoHolder();
     DBConnector::getConnection($db_info);
   }
@@ -775,4 +960,3 @@ class EQueryFailed extends Exception
 
 }
 ?>
-

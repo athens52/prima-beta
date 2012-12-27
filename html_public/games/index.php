@@ -1,8 +1,9 @@
 <?php
-//Скрипт для собственно игры
   include("../../php_script/cross_zero.php");
 
-  storageFabrique::getStorage()->init();
+  fieldAnalyser::init('fieldAnalyserCrossZero');
+  fieldStorageFabrique::getStorage()->init();
+  valueStorageFabrique::getStorage()->init();
 
   $field = fieldPeer::getField(requestWrapper::getParameter('id', null));
 
@@ -23,9 +24,10 @@
       $error_message = $e->getMessage();
     }
   }
+  
 ?>
 <div>
-game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
+game status: <span style="color:<?php echo fieldAnalyser::isGameOver($field) ? 'green' : 'black' ?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
 <?php if(strlen($error_message) > 0) {?>
 <span style="color:red;">
   <?php echo $error_message;?>
@@ -38,7 +40,7 @@ game status: <span style="color:<?php echo $field->getFieldState() == field::GS_
   <tr>
     <?php for ($j = 0; $j < 3; $j++) {?>
     <td width="33%">
-      <a href="index.php?id=<?php echo $field->getId();?>&sign=<?php echo $sign_list[$sign_index];?>"><div><?php echo is_null($field->getCellState($sign_list[$sign_index])) ? '&nbsp' : ($field->getCellState($sign_list[$sign_index]) == cell::CROSS_VALUE ? 'X' : '0');?></div></a>
+      <a href="index.php?id=<?php echo $field->getId();?>&sign=<?php echo $sign_list[$sign_index];?>"><div><?php echo (cellState::getCellStateName($field->getCellState($sign_list[$sign_index])));?></div></a>
       <?php $sign_index++;?>
     </td>
     <?php }?>

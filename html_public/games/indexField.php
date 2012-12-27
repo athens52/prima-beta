@@ -3,16 +3,17 @@
   include("../../php_script/cross_zero.php");
 
   $error_message = '';
-  if(storageFabrique::getStorage() instanceof MySQLStorage)
+  fieldAnalyser::init('fieldAnalyserCrossZero');
+  if(fieldStorageFabrique::getStorage() instanceof fieldMySQLStorage)
   {
-    storageFabrique::getStorage()->init();
+    fieldStorageFabrique::getStorage()->init();
     if(requestWrapper::hasParameter('field_id'))
     {
       $field = fieldPeer::getField(requestWrapper::getParameter('field_id', null));
     }
     else
     {
-      $field_list = storageFabrique::getStorage()->getFieldList();
+      $field_list = fieldStorageFabrique::getStorage()->getFieldList();
     }
   }
   else
@@ -33,7 +34,7 @@
 
 <?php if(requestWrapper::hasParameter('field_id')) {?>
 <div>
-  game status: <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
+  game status: <span style="color:<?php echo fieldAnalyser::isGameOver($field) ? 'green' : 'black'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
 </div>
 <table width=150px border=1>
   <?php foreach (fieldAnalyser::getSignList() as $sign) {?>
@@ -43,7 +44,7 @@
       <?php echo $cell->getSign()?>
     </td>
     <td>
-      <?php echo $cell->getValue()?>
+      <?php echo cellState::getCellStateName($cell->getValue())?>
     </td>
   </tr>
   <?php }?>
@@ -57,7 +58,7 @@
       <?php echo $field->getId();?>
     </td>
     <td>
-      <span style="color:<?php echo $field->getFieldState() == field::GS_CONTINUED ? 'black' : 'green'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
+      <span style="color:<?php echo fieldAnalyser::isGameOver($field) ? 'green' : 'black'?>;"><?php echo fieldState::getFieldStateName($field->getFieldState());?></span>
     </td>
     <td>
       <a href="indexField.php?field_id=<?php echo $field->getId()?>">Detail</a>
