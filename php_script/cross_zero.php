@@ -462,15 +462,6 @@ class fieldAnalyser implements IFieldAnalyser
    */
   public static function calculateFieldState($field, $value)
   {
-//    if(fieldAnalyser::isFieldWon($field, $value))
-//    {
-//      return fieldAnalyser::getWinState($value);
-//    }
-//    elseif(fieldAnalyser::isFieldWinAvaliable($field, $value) == false)
-//    {
-//      return fieldAnalyser::GS_NO_WIN;
-//    }
-//    return fieldAnalyser::GS_CONTINUED;
     $class_name = self::$cur_realisation;
     return $class_name::calculateFieldState($field, $value);
   }
@@ -481,7 +472,6 @@ class fieldAnalyser implements IFieldAnalyser
    */
   public static function getInitFieldState()
   {
-    //return fieldAnalyser::GS_CONTINUED;
     $class_name = self::$cur_realisation;
     return $class_name::getInitFieldState();
   }
@@ -493,12 +483,6 @@ class fieldAnalyser implements IFieldAnalyser
    */
   public static function isGameOver($field)
   {
-//    $result = false;
-//    if($field->getFieldState() <> fieldAnalyser::GS_CONTINUED)
-//    {
-//      $result = true;
-//    }
-//    return $result;
     $class_name = self::$cur_realisation;
     return $class_name::isGameOver($field);
   }
@@ -510,10 +494,6 @@ class fieldAnalyser implements IFieldAnalyser
    */
   public static function checkSignValid($sign)
   {
-//    if(!in_array($sign, self::getSignList()))
-//    {
-//      throw new EInvalidSign($sign . ' is invalid sign');
-//    }
     $class_name = self::$cur_realisation;
     return $class_name::checkSignValid($sign);
   }
@@ -523,10 +503,6 @@ class fieldAnalyser implements IFieldAnalyser
    */
   public static function checkValueValid($value)
   {
-//    if(!(($value == fieldAnalyser::CROSS_VALUE) or ($value == fieldAnalyser::ZERO_VALUE)))
-//    {
-//      throw new EInvalidValue($value . ' - is invalid value');
-//    }
     $class_name = self::$cur_realisation;
     return $class_name::checkValueValid($value);
   }
@@ -537,7 +513,6 @@ class fieldAnalyser implements IFieldAnalyser
   */
   public static function getSignList()
   {
-//    return array(1,2,3,8,9,4,7,6,5);
     $class_name = self::$cur_realisation;
     return $class_name::getSignList();
   }
